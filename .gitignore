@@ -399,3 +399,9 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
+# fichiers commités mais à ne pas pusher
+Unet Segmentation Script.py
+data/
+models/
+*.csv
+*.xlsx
