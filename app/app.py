@@ -1,12 +1,10 @@
 import streamlit as st
 import requests
 from PIL import Image
-import numpy as np
 import io
-import base64
 
 # URL de l'API
-API_URL = "http://localhost:8000/predict"
+API_URL = "http://api:8000/predict"
 
 # Configuration de la page Streamlit
 st.set_page_config(
@@ -42,7 +40,7 @@ if uploaded_file:
         st.write("⏳ Envoi de l'image à l'API...")
         with st.spinner("Traitement de l'image en cours..."):
             buffered = io.BytesIO()
-            image.save(buffered, format="JPEG")
+            image.save(buffered, format="PNG")
             img_bytes = buffered.getvalue()
             response = requests.post(API_URL, files={"file": img_bytes})
 
@@ -50,28 +48,38 @@ if uploaded_file:
         if response.status_code == 200:
             st.success("✅ Prédiction terminée avec succès !")
 
-            results = response.json()
-            original_mask = Image.open(io.BytesIO(base64.b64decode(results["original_mask"])))
-            predicted_mask = Image.open(io.BytesIO(base64.b64decode(results["predicted_mask"])))
+            # Sauvegarder le masque téléchargé
+            with open("downloaded_mask.png", "wb") as f:
+                f.write(response.content)
+
+            # Charger le masque sauvegardé en tant qu'image
+            predicted_mask = Image.open("downloaded_mask.png")
 
             # Affichage des résultats
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
 
             with col1:
                 st.image(image, caption="Image d'entrée", use_column_width=True)
 
             with col2:
-                st.image(original_mask, caption="Masque Réel (Couleurs originales)", use_column_width=True)
+                st.image(predicted_mask, caption="Masque Prédit (Téléchargé)", use_column_width=True)
 
-            with col3:
-                st.image(predicted_mask, caption="Masque Prédit (Couleurs des catégories)", use_column_width=True)
+            # Lien pour télécharger le masque
+            st.download_button(
+                label="Télécharger le masque",
+                data=response.content,
+                file_name="predicted_mask.png",
+                mime="image/png"
+            )
 
         else:
             st.error(f"❌ Une erreur s'est produite : {response.text}")
 
-# Section des exemples
-st.sidebar.header("📂 Exemples")
-examples = ["example1.jpg", "example2.jpg", "example3.jpg"]  # Liste des exemples
-for example in examples:
-    if st.sidebar.button(f"Charger {example}"):
-        st.image(f"./examples/{example}", caption="Image Exemple")
+# # Section des exemples
+# st.sidebar.header("📂 Exemples")
+# examples = ["example1.jpg", "example2.jpg", "example3.jpg"]  # Liste des exemples
+# for example in examples:
+#     if st.sidebar.button(f"Charger {example}"):
+#         st.image(f"./examples/{example}", caption="Image Exemple")
+
+

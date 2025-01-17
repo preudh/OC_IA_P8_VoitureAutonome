@@ -1,13 +1,19 @@
-# Utilise une image Python 3.11
+# Utilise une image Python 3.11 comme base
 FROM python:3.11-slim
 
 # Définit le répertoire de travail
 WORKDIR /app
 
-# Copie le fichier requirements.txt
+# Installe les dépendances système nécessaires
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copie uniquement le fichier requirements.txt pour optimiser le cache Docker
 COPY requirements.txt /app/
 
-# Installe les dépendances
+# Installe les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copie tout le contenu du répertoire courant vers /app

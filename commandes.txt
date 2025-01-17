@@ -1,0 +1,20 @@
+Déploiement et Utilisation en local:
+docker-compose up
+
+Accéder aux services :
+
+API FastAPI : http://localhost:8000/docs
+Application Streamlit : http://localhost:8501
+
+Arrêter les conteneurs :
+docker-compose down
+
+Supprimer les conteneurs, les images et les volumes inutilisés :
+docker container prune -f
+
+Supprimer les images inutilisées :
+docker image prune -f
+
+Rebuildez vos conteneurs après avoir mis à jour requirements.txt :
+docker-compose build --no-cache
+docker-compose up
