@@ -4,7 +4,9 @@ from PIL import Image
 import io
 
 # URL de l'API
-API_URL = "http://api:8000/predict"
+# API_URL = "http://api:8000/predict" pour le local
+API_URL = "http://fastapi-p8.westeurope.azurecontainer.io:8000/predict"
+
 
 # Configuration de la page Streamlit
 st.set_page_config(

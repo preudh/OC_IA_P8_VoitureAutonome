@@ -1,20 +1,48 @@
-Déploiement et Utilisation en local:
+### Déploiement et Utilisation en local :
 docker-compose up
 
-Accéder aux services :
+### Accéder aux services :
 
 API FastAPI : http://localhost:8000/docs
 Application Streamlit : http://localhost:8501
 
-Arrêter les conteneurs :
+### Arrêter les conteneurs :
 docker-compose down
 
-Supprimer les conteneurs, les images et les volumes inutilisés :
+### Supprimer les conteneurs, les images et les volumes inutilisés :
 docker container prune -f
-
-Supprimer les images inutilisées :
 docker image prune -f
 
-Rebuildez vos conteneurs après avoir mis à jour requirements.txt :
+### Rebuild des conteneurs après mise à jour des dépendances :
 docker-compose build --no-cache
 docker-compose up
+
+### Supprimer les conteneurs sur Azure :
+az container delete --name fastapi-container --resource-group P9ResourceGroup --yes
+az container delete --name streamlit-container --resource-group P9ResourceGroup --yes
+
+### Construire les images en local :
+docker build -t api:latest .
+docker build -t app:latest .
+
+### Pusher les images vers Azure Container Registry (ACR) :
+docker tag api:latest p8containerregistry.azurecr.io/api:latest
+docker push p8containerregistry.azurecr.io/api:latest
+
+docker tag app:latest p8containerregistry.azurecr.io/app:latest
+docker push p8containerregistry.azurecr.io/app:latest
+
+### Créer les conteneurs FastAPI et Streamlit sur Azure :
+# FastAPI :
+az container create --name fastapi-container --resource-group P9ResourceGroup --image p8containerregistry.azurecr.io/api:latest --cpu 2 --memory 4 --registry-login-server p8containerregistry.azurecr.io --registry-username <REGISTRY_USERNAME> --registry-password <REGISTRY_PASSWORD> --ports 8000 --dns-name-label fastapi-p8 --environment-variables PYTHONUNBUFFERED=1
+
+# Streamlit :
+az container create --name streamlit-container --resource-group P9ResourceGroup --image p8containerregistry.azurecr.io/app:latest --cpu 2 --memory 4 --registry-login-server p8containerregistry.azurecr.io --registry-username <REGISTRY_USERNAME> --registry-password <REGISTRY_PASSWORD> --ports 8501 --dns-name-label streamlit-p8 --environment-variables API_URL=http://fastapi-p8.westeurope.azurecontainer.io:8000/predict
+
+### Autres commandes utiles pour le déploiement des conteneurs directement sur Azure :
+# FastAPI :
+az container create --resource-group P9ResourceGroup --name fastapi-container --image api:latest --cpu 2 --memory 4 --ip-address public --ports 8000
+
+# Streamlit :
+az container create --resource-group P9ResourceGroup --name streamlit-container --image app:latest --cpu 2 --memory 4 --ip-address public --ports 8501
+
